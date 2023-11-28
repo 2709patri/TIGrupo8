@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!--libreria React-->
+  <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+  <!--libreria Babel-->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+
+  <title>Lista-de-tareas</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #133b27;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    main {
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(155, 245, 155, 0.3);
+      color: white; /* Color del texto dentro del main */
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    /* Estilos para el ToDoItem */
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 8px;
+    }
+
+    .todo-text {
+      flex-grow: 1;
+    }
+
+    .todo-icon {
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      justify-content: space-between;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+   
+
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+ 
+ <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Componente de Tarea (TaskItem)
+    const TaskItem = ({ tarea, toggleCompletar, borrarTarea }) => {
+  const estiloTachado = {
+    textDecoration: tarea.completada ? 'line-through' : 'none',
+  };
+
+  return (
+    <li>
+      
+      <span className="todo-text" style={estiloTachado}>{tarea.nombre}</span>
+      <button className="todo-button" onClick={() => toggleCompletar(tarea.id)}>Listo</button>
+      <button onClick={() => borrarTarea(tarea.id)}>Borrar</button>
+    </li>
+  );
+};
+    // Componente de Lista de Tareas (TaskList)
+    const TaskList = ({ tareas, toggleCompletar, borrarTarea }) => {
+      return (
+        <ul>
+          {tareas.map(tarea => (
+            <TaskItem key={tarea.id} tarea={tarea} toggleCompletar={toggleCompletar} borrarTarea={borrarTarea} />
+          ))}
+        </ul>
+      );
+    };
+
+    // Componente de Formulario (TaskForm)
+    const TaskForm = ({ agregarTarea }) => {
+      const [nuevaTarea, setNuevaTarea] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (nuevaTarea.trim() !== '') {
+          agregarTarea(nuevaTarea);
+          setNuevaTarea('');
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <input type="text" value={nuevaTarea} onChange={(e) => setNuevaTarea(e.target.value)} placeholder="Nueva Tarea" />
+          <button type="submit">Agregar</button>
+        </form>
+      );
+    };
+
+    // Componente Principal (App)
+    const App = () => {
+      const [proximoID, setProximoID] = useState(4);
+      const [tareas, setTareas] = useState([]);
+      const [tareasPendientes, setTareasPendientes] = useState(0);
+      const [tareasRealizadas, setTareasRealizadas] = useState(0);
+
+      useEffect(() => {
+        // Actualizar el contador de tareas pendientes y realizadas
+        const pendientes = tareas.filter(tarea => !tarea.completada).length;
+        const realizadas = tareas.filter(tarea => tarea.completada).length;
+        setTareasPendientes(pendientes);
+        setTareasRealizadas(realizadas);
+      }, [tareas]);
+
+      const agregarTarea = (nombre) => {
+        setTareas(prevTareas => [...prevTareas, { id: proximoID, nombre, completada: false }]);
+        setProximoID(id => id + 1);
+      };
+
+      const toggleCompletar = (id) => {
+    setTareas((prevTareas) =>
+      prevTareas.map((tarea) =>
+        tarea.id === id ? { ...tarea, completada: !tarea.completada } : tarea
+      )
+    );
+  };
+      const borrarTarea = (id) => {
+        setTareas(prevTareas => prevTareas.filter(tarea => tarea.id !== id));
+      };
+
+      return (
+        <main>
+          <h1>LISTA DE TAREAS</h1>
+          <h2>Día organizado</h2>
+          <TaskForm agregarTarea={agregarTarea} />
+          <TaskList tareas={tareas} toggleCompletar={toggleCompletar} borrarTarea={borrarTarea} />
+          <p>Pendientes: {tareasPendientes}</p> <p>Realizadas: {tareasRealizadas}</p>
+          
+          
+        </main>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+
+</html>
